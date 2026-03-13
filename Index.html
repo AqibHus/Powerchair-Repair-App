@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Repair Log</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0f0f0f;
+    --surface:   #1a1a1a;
+    --surface2:  #222222;
+    --border:    #2e2e2e;
+    --border2:   #3a3a3a;
+    --text:      #f0f0f0;
+    --muted:     #888;
+    --accent:    #4ade80;
+    --accent-dim:#1a3d28;
+    --amber:     #fbbf24;
+    --amber-dim: #3d2f0a;
+    --red:       #f87171;
+    --red-dim:   #3d1515;
+    --blue:      #60a5fa;
+    --blue-dim:  #1a2a3d;
+    --radius:    10px;
+    --mono:      'DM Mono', monospace;
+    --sans:      'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  /* ── TOP NAV ── */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-brand {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+  .nav-status {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+  }
+  .status-dot.live { background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0%,100% { opacity:1; } 50% { opacity:0.4; }
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; padding: 24px 20px; max-width: 600px; margin: 0 auto; }
+  .screen.active { display: block; }
+
+  /* ── SECTION HEADING ── */
+  .screen-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .screen-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .card-label {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+
+  input, select, textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+  textarea { resize: none; min-height: 80px; line-height: 1.5; }
+
+  /* ── ORDER CARDS (select screen) ── */
+  .order-list { display: flex; flex-direction: column; gap: 10px; }
+  .order-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .order-card:hover, .order-card:active {
+    border-color: var(--accent);
+    background: var(--surface2);
+  }
+  .order-card-left { flex: 1; min-width: 0; }
+  .order-id {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .order-fault {
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .order-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .tag {
+    font-size: 11px;
+    font-family: var(--mono);
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .tag-amber { background: var(--amber-dim); color: var(--amber); }
+  .tag-blue  { background: var(--blue-dim);  color: var(--blue); }
+  .tag-green { background: var(--accent-dim); color: var(--accent); }
+  .chevron { color: var(--border2); font-size: 18px; flex-shrink: 0; }
+
+  /* ── ORDER DETAIL BANNER ── */
+  .order-banner {
+    background: var(--accent-dim);
+    border: 1px solid #2d5e3f;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .order-banner.visible { display: block; }
+  .order-banner-id {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .order-banner-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .order-banner-item .lbl {
+    font-size: 11px;
+    color: #5a9e72;
+    margin-bottom: 2px;
+  }
+  .order-banner-item .val {
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  /* ── PARTS SEARCH ── */
+  .search-wrap { position: relative; }
+  .search-input { padding-left: 40px; }
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 15px;
+    pointer-events: none;
+  }
+  .parts-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    z-index: 50;
+    max-height: 240px;
+    overflow-y: auto;
+    display: none;
+  }
+  .parts-dropdown.open { display: block; }
+  .part-opt {
+    padding: 11px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .part-opt:last-child { border-bottom: none; }
+  .part-opt:hover { background: var(--surface); }
+  .part-opt-name { font-size: 14px; margin-bottom: 2px; }
+  .part-opt-sku {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .part-opt-model {
+    display: inline-block;
+    font-size: 10px;
+    background: var(--blue-dim);
+    color: var(--blue);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+  }
+  .no-results {
+    padding: 14px;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ── PARTS TABLE ── */
+  .parts-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .parts-table th {
+    text-align: left;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    padding: 0 8px 8px;
+    font-weight: 400;
+  }
+  .parts-table td {
+    padding: 8px;
+    border-top: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .parts-table tr:first-child td { border-top: none; }
+  .sku-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+    margin-top: 2px;
+  }
+  .qty-field {
+    width: 54px;
+    text-align: center;
+    padding: 7px 8px;
+  }
+  .remove-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.15s;
+  }
+  .remove-btn:hover { color: var(--red); }
+  .empty-parts {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  /* ── TIME CHIPS ── */
+  .time-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .time-chip {
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 0;
+    text-align: center;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--muted);
+    background: var(--surface2);
+    transition: all 0.15s;
+  }
+  .time-chip:hover { border-color: var(--accent); color: var(--text); }
+  .time-chip.sel {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ── SERVICE LEVEL ── */
+  .service-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .service-opt {
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface2);
+  }
+  .service-opt:hover { border-color: var(--border2); background: var(--surface); }
+  .service-opt.sel-light {
+    background: var(--blue-dim);
+    border-color: var(--blue);
+  }
+  .service-opt.sel-heavy {
+    background: var(--amber-dim);
+    border-color: var(--amber);
+  }
+  .service-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+  .service-sub { font-size: 12px; color: var(--muted); }
+  .sel-light .service-title { color: var(--blue); }
+  .sel-light .service-sub   { color: #5a80b0; }
+  .sel-heavy .service-title { color: var(--amber); }
+  .sel-heavy .service-sub   { color: #9e7a2a; }
+
+  /* ── STATUS SELECT ── */
+  .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .status-opt {
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface2);
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .status-opt:hover { background: var(--surface); }
+  .status-opt.sel-inrepair {
+    background: var(--amber-dim);
+    border-color: var(--amber);
+    color: var(--amber);
+  }
+  .status-opt.sel-complete {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── BUTTONS ── */
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #0a1f12;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    margin-top: 8px;
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary {
+    width: 100%;
+    background: none;
+    color: var(--muted);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 13px;
+    font-size: 14px;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    margin-top: 8px;
+  }
+  .btn-secondary:hover { border-color: var(--text); color: var(--text); }
+
+  /* ── LOADING ── */
+  .loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .spinner {
+    width: 28px; height: 28px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── ERROR / EMPTY ── */
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 32px; margin-bottom: 12px; }
+  .empty-title { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; }
+
+  /* ── SUCCESS SCREEN ── */
+  .success-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .success-icon {
+    width: 72px; height: 72px;
+    background: var(--accent-dim);
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin-bottom: 24px;
+  }
+  .success-title { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; line-height: 1.6; }
+  .success-details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    width: 100%;
+    max-width: 360px;
+    text-align: left;
+    margin-bottom: 24px;
+  }
+  .success-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .success-row:last-child { border-bottom: none; }
+  .success-row .lbl { color: var(--muted); }
+  .success-row .val { font-family: var(--mono); font-size: 12px; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 13px;
+    color: var(--text);
+    transition: transform 0.3s ease;
+    z-index: 200;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-brand">REPAIR LOG</span>
+  <span class="nav-status" id="navStatus">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">Connecting...</span>
+  </span>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══ SCREEN: LOADING ══════════════════════════════════════════════════════ -->
+<div class="screen active" id="screenLoading">
+  <div class="loader">
+    <div class="spinner"></div>
+    Loading repair orders...
+  </div>
+</div>
+
+<!-- ══ SCREEN: SELECT ORDER ════════════════════════════════════════════════ -->
+<div class="screen" id="screenOrders">
+  <div class="screen-title">Select order</div>
+  <div class="screen-sub">Choose the job you're logging a repair for.</div>
+  <div class="order-list" id="orderList"></div>
+</div>
+
+<!-- ══ SCREEN: LOG REPAIR ══════════════════════════════════════════════════ -->
+<div class="screen" id="screenLog">
+
+  <div class="order-banner visible" id="orderBanner">
+    <div class="order-banner-id" id="bannerOrderId"></div>
+    <div class="order-banner-grid">
+      <div class="order-banner-item">
+        <div class="lbl">Chair model</div>
+        <div class="val" id="bannerChair"></div>
+      </div>
+      <div class="order-banner-item">
+        <div class="lbl">Repair type</div>
+        <div class="val" id="bannerType"></div>
+      </div>
+      <div class="order-banner-item" style="grid-column:1/-1">
+        <div class="lbl">Fault reported</div>
+        <div class="val" id="bannerFault"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Technician -->
+  <div class="card">
+    <div class="card-label">Technician</div>
+    <div class="field">
+      <select id="techSelect">
+        <option value="">— Select technician —</option>
+        <option>Aziz</option>
+        <option>Shujaat</option>
+        <option>Kashif</option>
+        <option>Ibraheem</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Parts -->
+  <div class="card">
+    <div class="card-label">Parts used</div>
+    <div class="field">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" type="text" id="partSearch"
+               placeholder="Search by name, SKU or model..."
+               autocomplete="off" />
+        <div class="parts-dropdown" id="partsDropdown"></div>
+      </div>
+    </div>
+    <table class="parts-table" id="partsTable">
+      <thead>
+        <tr>
+          <th style="width:50%">Part</th>
+          <th style="width:20%">Model</th>
+          <th style="width:15%">Qty</th>
+          <th style="width:15%"></th>
+        </tr>
+      </thead>
+      <tbody id="partsBody">
+        <tr><td colspan="4"><div class="empty-parts">Search above to add parts</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Time taken -->
+  <div class="card">
+    <div class="card-label">Time taken</div>
+    <div class="time-grid" id="timeGrid">
+      <div class="time-chip" onclick="selectTime(this,'0.5')">0.5 hr</div>
+      <div class="time-chip" onclick="selectTime(this,'1.0')">1 hr</div>
+      <div class="time-chip" onclick="selectTime(this,'1.5')">1.5 hr</div>
+      <div class="time-chip" onclick="selectTime(this,'2.0')">2 hr</div>
+      <div class="time-chip" onclick="selectTime(this,'2.5')">2.5 hr</div>
+      <div class="time-chip" onclick="selectTime(this,'3.0')">3 hr</div>
+      <div class="time-chip" onclick="selectTime(this,'4.0')">4 hr</div>
+      <div class="time-chip" onclick="selectTime(this,'5.0')">5 hr</div>
+    </div>
+  </div>
+
+  <!-- Service level -->
+  <div class="card">
+    <div class="card-label">Service level</div>
+    <div class="service-grid">
+      <div class="service-opt" id="optLight" onclick="selectService('Light Service')">
+        <div class="service-title">Light service</div>
+        <div class="service-sub">Routine fix, single part swap</div>
+      </div>
+      <div class="service-opt" id="optHeavy" onclick="selectService('Heavy Service')">
+        <div class="service-title">Heavy service</div>
+        <div class="service-sub">Full strip-down, multiple parts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Repair status -->
+  <div class="card">
+    <div class="card-label">Repair status</div>
+    <div class="status-grid">
+      <div class="status-opt" id="optInRepair" onclick="selectStatus('In Repair')">
+        In repair
+      </div>
+      <div class="status-opt" id="optComplete" onclick="selectStatus('Complete')">
+        Complete
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="card">
+    <div class="card-label">Notes for CS team</div>
+    <textarea id="notesField"
+      placeholder="Any follow-up needed, parts on order, customer instructions..."></textarea>
+  </div>
+
+  <button class="btn-primary" id="submitBtn" onclick="submitRepair()">
+    Submit repair log
+  </button>
+  <button class="btn-secondary" onclick="goBack()">
+    ← Back to orders
+  </button>
+
+</div>
+
+<!-- ══ SCREEN: SUCCESS ══════════════════════════════════════════════════════ -->
+<div class="screen" id="screenSuccess">
+  <div class="success-wrap">
+    <div class="success-icon">✓</div>
+    <div class="success-title">Repair logged</div>
+    <div class="success-sub" id="successSub">
+      The repair has been saved and the pipeline updated.
+    </div>
+    <div class="success-details" id="successDetails"></div>
+    <button class="btn-primary" onclick="logAnother()" style="max-width:280px">
+      Log another repair
+    </button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: ERROR ════════════════════════════════════════════════════════ -->
+<div class="screen" id="screenError">
+  <div class="empty-state">
+    <div class="empty-icon">⚠</div>
+    <div class="empty-title">Could not connect</div>
+    <div class="empty-sub" id="errorMsg">Check your connection and try again.</div>
+    <button class="btn-secondary" onclick="init()" style="margin-top:24px; max-width:240px; margin-left:auto; margin-right:auto">
+      Retry
+    </button>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzkU6NZY7ax-XG1anmVrY99pejDpO0RG7P9-TJHgVFivSzAgNBF46jKjilVrQ32Vqt7/exec';
+
+let allParts   = [];
+let allOrders  = [];
+let addedParts = [];
+let selectedTime    = null;
+let selectedService = null;
+let selectedStatus  = null;
+let currentOrder    = null;
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+async function init() {
+  showScreen('screenLoading');
+  setStatus('connecting');
+  try {
+    const [ordersRes, partsRes] = await Promise.all([
+      fetchData('getOrders'),
+      fetchData('getParts'),
+    ]);
+    if (!ordersRes.success) throw new Error(ordersRes.error || 'Failed to load orders');
+    if (!partsRes.success)  throw new Error(partsRes.error  || 'Failed to load parts');
+
+    allOrders = ordersRes.orders;
+    allParts  = partsRes.parts;
+    setStatus('live');
+    renderOrders();
+    showScreen('screenOrders');
+  } catch (err) {
+    setStatus('error');
+    document.getElementById('errorMsg').textContent = err.message;
+    showScreen('screenError');
+  }
+}
+
+async function fetchData(action, extra = '') {
+  const res = await fetch(`${SCRIPT_URL}?action=${action}${extra}`, { redirect: 'follow' });
+  return res.json();
+}
+
+async function postData(body) {
+  const res = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    redirect: 'follow'
+  });
+  return res.json();
+}
+
+// ── STATUS ────────────────────────────────────────────────────────────────────
+function setStatus(s) {
+  const dot  = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  if (s === 'live')        { dot.className = 'status-dot live'; text.textContent = 'Connected'; }
+  else if (s === 'connecting') { dot.className = 'status-dot'; text.textContent = 'Connecting...'; }
+  else                     { dot.className = 'status-dot'; text.textContent = 'Offline'; }
+}
+
+// ── SCREENS ───────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── RENDER ORDERS ─────────────────────────────────────────────────────────────
+function renderOrders() {
+  const list = document.getElementById('orderList');
+  if (!allOrders.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">✓</div>
+        <div class="empty-title">All caught up</div>
+        <div class="empty-sub">No open orders awaiting repair.</div>
+      </div>`;
+    return;
+  }
+  list.innerHTML = allOrders.map(o => {
+    const tagClass = o.pipelineStatus === 'Awaiting Assessment' ? 'tag-blue' : 'tag-amber';
+    const statusLabel = o.pipelineStatus || 'Awaiting Arrival';
+    const repairTag = o.repairStatus === 'In Repair'
+      ? `<span class="tag tag-amber">In Repair</span>` : '';
+    return `
+      <div class="order-card" onclick="selectOrder('${o.orderId}')">
+        <div class="order-card-left">
+          <div class="order-id">${o.orderId}</div>
+          <div class="order-fault">${o.chairModel ? o.chairModel + ' — ' : ''}${o.fault || 'No fault description'}</div>
+        </div>
+        <div class="order-meta">
+          <span class="tag ${tagClass}">${statusLabel}</span>
+          ${repairTag}
+          ${o.repairType === 'In Person' ? '<span class="tag tag-blue">In Person</span>' : ''}
+        </div>
+        <span class="chevron">›</span>
+      </div>`;
+  }).join('');
+}
+
+// ── SELECT ORDER ──────────────────────────────────────────────────────────────
+function selectOrder(orderId) {
+  currentOrder = allOrders.find(o => o.orderId === orderId);
+  if (!currentOrder) return;
+
+  // Reset form state
+  addedParts      = [];
+  selectedTime    = null;
+  selectedService = null;
+  selectedStatus  = null;
+  document.getElementById('techSelect').value  = '';
+  document.getElementById('notesField').value  = '';
+  document.getElementById('partSearch').value  = '';
+  document.querySelectorAll('.time-chip').forEach(c => c.classList.remove('sel'));
+  document.getElementById('optLight').className    = 'service-opt';
+  document.getElementById('optHeavy').className    = 'service-opt';
+  document.getElementById('optInRepair').className = 'status-opt';
+  document.getElementById('optComplete').className = 'status-opt';
+  renderPartsTable();
+
+  // Populate banner
+  document.getElementById('bannerOrderId').textContent = currentOrder.orderId +
+    (currentOrder.zendesk ? '  ·  Zendesk ' + currentOrder.zendesk : '');
+  document.getElementById('bannerChair').textContent  = currentOrder.chairModel  || '—';
+  document.getElementById('bannerType').textContent   = currentOrder.repairType  || '—';
+  document.getElementById('bannerFault').textContent  = currentOrder.fault       || '—';
+
+  showScreen('screenLog');
+}
+
+function goBack() {
+  showScreen('screenOrders');
+}
+
+// ── PARTS SEARCH ──────────────────────────────────────────────────────────────
+document.getElementById('partSearch').addEventListener('input', function() {
+  const q   = this.value.toLowerCase().trim();
+  const dd  = document.getElementById('partsDropdown');
+  if (q.length < 2) { dd.classList.remove('open'); return; }
+
+  const matches = allParts.filter(p =>
+    p.description.toLowerCase().includes(q) ||
+    p.sku.toLowerCase().includes(q) ||
+    p.model.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  if (!matches.length) {
+    dd.innerHTML = '<div class="no-results">No parts found</div>';
+    dd.classList.add('open');
+    return;
+  }
+  dd.innerHTML = matches.map(p => `
+    <div class="part-opt" onclick="addPart('${p.sku}')">
+      <div class="part-opt-name">${p.description}<span class="part-opt-model">${p.model}</span></div>
+      <div class="part-opt-sku">${p.sku}</div>
+    </div>`).join('');
+  dd.classList.add('open');
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap'))
+    document.getElementById('partsDropdown').classList.remove('open');
+});
+
+function addPart(sku) {
+  const p = allParts.find(x => x.sku === sku);
+  if (!p) return;
+  const existing = addedParts.find(x => x.sku === sku);
+  if (existing) { existing.qty++; }
+  else { addedParts.push({ ...p, qty: 1 }); }
+  document.getElementById('partSearch').value = '';
+  document.getElementById('partsDropdown').classList.remove('open');
+  renderPartsTable();
+}
+
+function updateQty(i, val) {
+  addedParts[i].qty = Math.max(1, parseInt(val) || 1);
+}
+
+function removePart(i) {
+  addedParts.splice(i, 1);
+  renderPartsTable();
+}
+
+function renderPartsTable() {
+  const tbody = document.getElementById('partsBody');
+  if (!addedParts.length) {
+    tbody.innerHTML = '<tr><td colspan="4"><div class="empty-parts">Search above to add parts</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = addedParts.map((p, i) => `
+    <tr>
+      <td>
+        <div style="font-size:13px">${p.description}</div>
+        <span class="sku-badge">${p.sku}</span>
+      </td>
+      <td style="font-size:12px;color:var(--muted)">${p.model}</td>
+      <td>
+        <input class="qty-field" type="number" min="1" value="${p.qty}"
+               onchange="updateQty(${i},this.value)" />
+      </td>
+      <td>
+        <button class="remove-btn" onclick="removePart(${i})">×</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ── TIME ──────────────────────────────────────────────────────────────────────
+function selectTime(el, val) {
+  document.querySelectorAll('.time-chip').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedTime = val;
+}
+
+// ── SERVICE LEVEL ─────────────────────────────────────────────────────────────
+function selectService(val) {
+  selectedService = val;
+  document.getElementById('optLight').className =
+    val === 'Light Service' ? 'service-opt sel-light' : 'service-opt';
+  document.getElementById('optHeavy').className =
+    val === 'Heavy Service' ? 'service-opt sel-heavy' : 'service-opt';
+}
+
+// ── REPAIR STATUS ─────────────────────────────────────────────────────────────
+function selectStatus(val) {
+  selectedStatus = val;
+  document.getElementById('optInRepair').className =
+    val === 'In Repair' ? 'status-opt sel-inrepair' : 'status-opt';
+  document.getElementById('optComplete').className =
+    val === 'Complete' ? 'status-opt sel-complete' : 'status-opt';
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────────
+async function submitRepair() {
+  const tech = document.getElementById('techSelect').value;
+  if (!tech)           { showToast('Please select a technician', true); return; }
+  if (!addedParts.length) { showToast('Please add at least one part', true); return; }
+  if (!selectedTime)   { showToast('Please select time taken', true); return; }
+  if (!selectedService){ showToast('Please select service level', true); return; }
+  if (!selectedStatus) { showToast('Please select repair status', true); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const payload = {
+      action:       'submitRepair',
+      orderId:      currentOrder.orderId,
+      technician:   tech,
+      dateOfRepair: today,
+      parts:        addedParts.map(p => ({ sku: p.sku, qty: p.qty })),
+      timeTaken:    parseFloat(selectedTime),
+      serviceLevel: selectedService,
+      repairStatus: selectedStatus,
+      notes:        document.getElementById('notesField').value.trim(),
+    };
+
+    const res = await postData(payload);
+    if (!res.success) throw new Error(res.error || 'Submission failed');
+
+    // Success screen
+    const details = `
+      <div class="success-row"><span class="lbl">Order</span><span class="val">${currentOrder.orderId}</span></div>
+      <div class="success-row"><span class="lbl">Technician</span><span class="val">${tech}</span></div>
+      <div class="success-row"><span class="lbl">Parts logged</span><span class="val">${addedParts.length}</span></div>
+      <div class="success-row"><span class="lbl">Time</span><span class="val">${selectedTime} hr</span></div>
+      <div class="success-row"><span class="lbl">Service</span><span class="val">${selectedService}</span></div>
+      <div class="success-row"><span class="lbl">Status</span><span class="val">${selectedStatus}</span></div>
+    `;
+    document.getElementById('successDetails').innerHTML = details;
+    document.getElementById('successSub').textContent =
+      selectedStatus === 'Complete'
+        ? `${currentOrder.orderId} marked complete. Pipeline and repair log updated.`
+        : `${currentOrder.orderId} logged as In Repair. Pipeline updated.`;
+
+    // Refresh orders list in background
+    fetchData('getOrders').then(r => { if (r.success) allOrders = r.orders; });
+    showScreen('screenSuccess');
+
+  } catch (err) {
+    showToast(err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Submit repair log';
+  }
+}
+
+function logAnother() {
+  renderOrders();
+  showScreen('screenOrders');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '') + ' show';
+  setTimeout(() => { t.classList.remove('show'); }, 3000);
+}
+
+// ── START ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
