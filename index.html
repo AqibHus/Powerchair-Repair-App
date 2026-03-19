@@ -492,7 +492,32 @@ var _uploadedFileCount=0,_repairFolderUrl='';
 // ─── Media Upload ──────────────────────────────────────────────────────────
 function handleMediaFiles(files,defaultMime){if(!files||!files.length)return;var orderId=(window.currentOrder&&window.currentOrder.orderId)||'unknown';Array.from(files).forEach(function(file){var reader=new FileReader();reader.onload=function(e){var dataUrl=e.target.result,mime=file.type||defaultMime;if(mime.startsWith('image/')){var img=new Image();img.onload=function(){var c=document.createElement('canvas');var sc=Math.min(1,1200/Math.max(img.width,img.height));c.width=img.width*sc;c.height=img.height*sc;c.getContext('2d').drawImage(img,0,0,c.width,c.height);var comp=c.toDataURL('image/jpeg',0.75);addMediaPreview(comp,file.name);uploadToDrive(orderId,file.name.replace(/\.[^.]+$/,'.jpg'),comp.split(',')[1],'image/jpeg');};img.src=dataUrl;}else{if(file.size>15*1024*1024){var st=document.getElementById('uploadStatus');if(st)st.textContent='⚠️ Video '+Math.round(file.size/1048576)+'MB — upload may take a moment.';}addMediaPreview(null,file.name);uploadToDrive(orderId,file.name,dataUrl.split(',')[1],mime);}};reader.readAsDataURL(file);});}
 function addMediaPreview(src,name){var box=document.getElementById('mediaPreviews');if(!box)return;var el=document.createElement('div');el.style.cssText='font-size:12px;background:#f0f4ff;padding:4px 8px;border-radius:6px;max-width:80px;text-align:center;';if(src){var i=document.createElement('img');i.src=src;i.style.cssText='width:60px;height:60px;object-fit:cover;border-radius:4px;display:block;';el.appendChild(i);}var t=document.createElement('div');t.textContent='✓ '+name.substring(0,12)+(name.length>12?'…':'');el.appendChild(t);box.appendChild(el);}
-function uploadToDrive(orderId,filename,base64,mime){var st=document.getElementById('uploadStatus');if(st)st.textContent='Uploading...';fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({action:'upload',orderId:orderId,filename:filename,data:base64,mimeType:mime})}).then(function(){_uploadedFileCount++;var s=document.getElementById('uploadStatus');if(s)s.textContent=_uploadedFileCount+' file(s) uploaded ✓';}).catch(function(err){var s=document.getElementById('uploadStatus');if(s)s.textContent='Upload error: '+err.message;});}
+function uploadToDrive(orderId,filename,base64,mime){
+  var st=document.getElementById('uploadStatus');
+  if(st)st.textContent='Uploading...';
+  var iframeId='upload_frame_'+Date.now();
+  var iframe=document.createElement('iframe');
+  iframe.name=iframeId;iframe.id=iframeId;
+  iframe.style.cssText='display:none;position:absolute;';
+  document.body.appendChild(iframe);
+  var form=document.createElement('form');
+  form.method='POST';form.action=SCRIPT_URL;form.target=iframeId;
+  form.style.display='none';
+  var fields={action:'upload',orderId:orderId,filename:filename,data:base64,mimeType:mime};
+  Object.keys(fields).forEach(function(k){
+    var inp=document.createElement('input');
+    inp.type='hidden';inp.name=k;inp.value=fields[k];
+    form.appendChild(inp);
+  });
+  document.body.appendChild(form);
+  iframe.onload=function(){
+    _uploadedFileCount++;
+    var s=document.getElementById('uploadStatus');
+    if(s)s.textContent=_uploadedFileCount+' file(s) uploaded ✓';
+    try{document.body.removeChild(form);document.body.removeChild(iframe);}catch(e){}
+  };
+  form.submit();
+}
 
 </script>
 </body>
