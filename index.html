@@ -143,6 +143,7 @@ textarea{resize:none;min-height:80px;line-height:1.5}
       <div class="order-banner-item"><div class="lbl">Chair model</div><div class="val" id="bannerChair"></div></div>
       <div class="order-banner-item"><div class="lbl">Repair type</div><div class="val" id="bannerType"></div></div>
       <div class="order-banner-item" style="grid-column:1/-1"><div class="lbl">Fault reported</div><div class="val" id="bannerFault"></div></div>
+<button id="urduBtn" onclick="speakUrdu()" style="background:#1a73e8;color:white;border:none;padding:10px 0;border-radius:8px;font-size:15px;cursor:pointer;margin:8px 16px 0;display:block;width:calc(100% - 32px);">🔊 اردو میں سنیں (Speak in Urdu)</button>
     </div>
   </div>
 
@@ -222,7 +223,22 @@ textarea{resize:none;min-height:80px;line-height:1.5}
     <textarea id="notesField" placeholder="Any follow-up needed, parts on order, customer instructions..."></textarea>
   </div>
 
-  <button class="btn-primary" id="submitBtn" onclick="submitRepair()">Submit repair log</button>
+  <div style="margin-bottom:16px;">
+  <div style="font-weight:600;margin-bottom:8px;color:#555;font-size:14px;">📷 Photos &amp; 🎥 Videos</div>
+  <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+    <label style="background:#f0f4ff;border:1.5px solid #4285f4;color:#4285f4;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;">
+      📷 Add Photo
+      <input type="file" id="photoInput" accept="image/*" capture="environment" multiple style="display:none;" onchange="handleMediaFiles(this.files,'image/jpeg')">
+    </label>
+    <label style="background:#f0f4ff;border:1.5px solid #4285f4;color:#4285f4;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;">
+      🎥 Add Video
+      <input type="file" id="videoInput" accept="video/*" capture="environment" style="display:none;" onchange="handleMediaFiles(this.files,'video/mp4')">
+    </label>
+  </div>
+  <div id="mediaPreviews" style="display:flex;flex-wrap:wrap;gap:8px;min-height:0;"></div>
+  <div id="uploadStatus" style="font-size:13px;color:#666;margin-top:4px;"></div>
+</div>
+<button class="btn-primary" id="submitBtn" onclick="submitRepair()">Submit repair log</button>
   <button class="btn-secondary" onclick="goBack()">â Back to orders</button>
 </div>
 
@@ -469,6 +485,18 @@ function showToast(msg,err=false){
 }
 
 init();
+
+// ─── Upload state ─────────────────────────────────────────────────────────
+var _uploadedFileCount=0,_repairFolderUrl='',_speaking=false;
+(function(){var orig=window.selectOrder;if(typeof orig==='function'){window.selectOrder=function(id){_uploadedFileCount=0;_repairFolderUrl='';_speaking=false;var p=document.getElementById('mediaPreviews');var s=document.getElementById('uploadStatus');if(p)p.innerHTML='';if(s)s.textContent='';return orig(id);};}}());
+
+// ─── Media Upload ──────────────────────────────────────────────────────────
+function handleMediaFiles(files,defaultMime){if(!files||!files.length)return;var orderId=(window.currentOrder&&window.currentOrder.orderId)||'unknown';Array.from(files).forEach(function(file){var reader=new FileReader();reader.onload=function(e){var dataUrl=e.target.result,mime=file.type||defaultMime;if(mime.startsWith('image/')){var img=new Image();img.onload=function(){var c=document.createElement('canvas');var sc=Math.min(1,1200/Math.max(img.width,img.height));c.width=img.width*sc;c.height=img.height*sc;c.getContext('2d').drawImage(img,0,0,c.width,c.height);var comp=c.toDataURL('image/jpeg',0.75);addMediaPreview(comp,file.name);uploadToDrive(orderId,file.name.replace(/\.[^.]+$/,'.jpg'),comp.split(',')[1],'image/jpeg');};img.src=dataUrl;}else{if(file.size>15*1024*1024){var st=document.getElementById('uploadStatus');if(st)st.textContent='⚠️ Video '+Math.round(file.size/1048576)+'MB — upload may take a moment.';}addMediaPreview(null,file.name);uploadToDrive(orderId,file.name,dataUrl.split(',')[1],mime);}};reader.readAsDataURL(file);});}
+function addMediaPreview(src,name){var box=document.getElementById('mediaPreviews');if(!box)return;var el=document.createElement('div');el.style.cssText='font-size:12px;background:#f0f4ff;padding:4px 8px;border-radius:6px;max-width:80px;text-align:center;';if(src){var i=document.createElement('img');i.src=src;i.style.cssText='width:60px;height:60px;object-fit:cover;border-radius:4px;display:block;';el.appendChild(i);}var t=document.createElement('div');t.textContent='✓ '+name.substring(0,12)+(name.length>12?'…':'');el.appendChild(t);box.appendChild(el);}
+function uploadToDrive(orderId,filename,base64,mime){var st=document.getElementById('uploadStatus');if(st)st.textContent='Uploading…';fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'upload',orderId:orderId,filename:filename,data:base64,mimeType:mime})}).then(function(r){return r.json();}).then(function(d){_uploadedFileCount++;if(d.folderUrl)_repairFolderUrl=d.folderUrl;if(st)st.textContent=_uploadedFileCount+' file(s) uploaded ✓';}).catch(function(e){if(st)st.textContent='⚠️ Upload failed: '+e.message;});}
+
+// ─── Urdu TTS ─────────────────────────────────────────────────────────────
+function speakUrdu(){if(!('speechSynthesis' in window)){alert('Text-to-speech not supported on this device.');return;}var btn=document.getElementById('urduBtn');if(_speaking){window.speechSynthesis.cancel();_speaking=false;if(btn)btn.textContent='🔊 اردو میں سنیں (Speak in Urdu)';return;}var o=window.currentOrder||{};var parts=['آرڈر نمبر '+(o.orderId||''),'چیئر ماڈل '+(o.chairModel||''),'خرابی '+(o.fault||'')].filter(function(s){return s.trim().length>5;});var utt=new SpeechSynthesisUtterance(parts.join('۔ '));utt.lang='ur-PK';var uv=window.speechSynthesis.getVoices().find(function(v){return v.lang.startsWith('ur');});if(uv)utt.voice=uv;utt.onend=utt.onerror=function(ev){_speaking=false;if(btn)btn.textContent='🔊 اردو میں سنیں (Speak in Urdu)';if(ev.type==='error')alert('Urdu voice not available. Install Urdu TTS on your device.');};_speaking=true;if(btn)btn.textContent='⏹ Stop';window.speechSynthesis.speak(utt);}
 </script>
 </body>
 </html>
