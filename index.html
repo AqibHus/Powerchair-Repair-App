@@ -98,7 +98,7 @@ textarea{resize:none;min-height:80px;line-height:1.5}
 .empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
 .empty-icon{font-size:32px;margin-bottom:12px}
 .empty-title{font-size:16px;color:var(--text);margin-bottom:6px}
-.empty-sub{font-size:13py}
+.empty-sub{font-size:13px}
 .success-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:40px 20px}
 .success-icon{width:72px;height:72px;background:var(--accent-dim);border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:24px}
 .success-title{font-size:22px;font-weight:600;margin-bottom:8px}
@@ -460,7 +460,7 @@ async function submitRepair(){
       <div class="success-row"><span class="lbl">Parts logged</span><span class="val">${addedParts.length}</span></div>
       <div class="success-row"><span class="lbl">Time</span><span class="val">${selectedTime} hr</span></div>
       <div class="success-row"><span class="lbl">Service</span><span class="val">${selectedServiceRequired?selectedService:'None required'}</span></div>
-      <div class="succest-row"><span class="lbl">Status</span><span class="val">${selectedStatus}</span></div>`;
+      <div class="success-row"><span class="lbl">Status</span><span class="val">${selectedStatus}</span></div>`;
     document.getElementById('successSub').textContent=selectedStatus==='Complete'
       ?`${currentOrder.orderId} marked complete. Pipeline and repair log updated.`
       :`${currentOrder.orderId} logged as In Repair. Pipeline updated.`;
@@ -506,9 +506,9 @@ function uploadToDrive(orderId,filename,base64,mime){
       // all chunks sent — assemble
       jsonp({action:'assembleUpload',orderId:orderId,filename:filename,mimeType:mime,total:total})
         .then(function(r){
-          if(r&&r.error){setStatus('⚠️ Upload error: '+r.error);return}
+          if(r&&r.error){setStatus('⚠️ Upload error: '+r.error);return;}
           _uploadedFileCount++;
-          setStatus(_uploadedFileCount+'' file(s) uploaded ✓');
+          setStatus(_uploadedFileCount+' file(s) uploaded ✓');
         })
         .catch(function(e){setStatus('⚠️ Assemble failed: '+e.message);});
       return;
