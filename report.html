@@ -256,6 +256,26 @@ let lbItems = [], lbIndex = 0
           <div class="lbl">Completed</div>
           <div class="val">${fmtDate(repair.submitted_at)}</div>
         </div>
+        ${repair.fault_confirmed ? `
+        <div class="info-item">
+          <div class="lbl">Fault Confirmed</div>
+          <div class="val">${fmtFaultConfirmed(repair.fault_confirmed)}</div>
+        </div>` : ''}
+        ${repair.additional_issues ? `
+        <div class="info-item full">
+          <div class="lbl">Additional Issues Found</div>
+          <div class="val">${esc(repair.additional_issues)}</div>
+        </div>` : ''}
+        ${repair.root_cause ? `
+        <div class="info-item">
+          <div class="lbl">Root Cause</div>
+          <div class="val">${fmtRootCause(repair.root_cause)}</div>
+        </div>` : ''}
+        ${repair.is_warranty !== null ? `
+        <div class="info-item">
+          <div class="lbl">Billing</div>
+          <div class="val">${repair.is_warranty ? '🛡 Warranty' : '💳 Chargeable'}</div>
+        </div>` : ''}
       </div>
     </div>` : ''}
 
@@ -290,6 +310,15 @@ let lbItems = [], lbIndex = 0
     <div class="card">
       <div class="card-title">Completion Photos &amp; Video</div>
       <div class="media-grid">${completion.map(m => thumbHTML(m, lbItems)).join('')}</div>
+    </div>` : ''}
+
+    ${repair?.cs_action ? `
+    <div style="background:#e8f6fc;border:1px solid #b3e2f7;border-radius:10px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <div style="font-size:22px">${csCsIcon(repair.cs_action)}</div>
+      <div>
+        <div style="font-size:11px;font-family:var(--mono);color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Recommended Action</div>
+        <div style="font-size:14px;font-weight:600;color:var(--dark)">${fmtCsAction(repair.cs_action)}</div>
+      </div>
     </div>` : ''}
 
     <button class="print-btn" onclick="window.print()">
@@ -363,6 +392,18 @@ function showError(msg) {
     </div>`
 }
 
+function fmtFaultConfirmed(v) {
+  return { confirmed:'✓ Confirmed as reported', additional:'✓ Confirmed + additional issues found', different:'↔ Different issue found', no_fault:'✗ No fault found' }[v] || v
+}
+function fmtRootCause(v) {
+  return { wear:'Wear & Tear', component:'Component Failure', accidental:'Accidental Damage', user:'User Error', manufacturing:'Manufacturing Defect', unknown:'Unknown' }[v] || v
+}
+function fmtCsAction(v) {
+  return { contact_customer:'Contact customer with update', arrange_return:'Arrange return of chair', raise_invoice:'Raise invoice', no_action:'No action required' }[v] || v
+}
+function csCsIcon(v) {
+  return { contact_customer:'📞', arrange_return:'📦', raise_invoice:'🧾', no_action:'✓' }[v] || '📋'
+}
 function fmtDate(d) { return new Date(d).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'}) }
 function fmtTime(mins) {
   if (!mins) return '—'

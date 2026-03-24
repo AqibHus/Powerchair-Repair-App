@@ -92,6 +92,34 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .outcome-opt.sel-amber{background:var(--amber-dim)!important;border-color:var(--amber)!important;color:var(--amber)!important}
 .outcome-opt.sel-red{background:var(--red-dim)!important;border-color:var(--red)!important;color:var(--red)!important}
 .outcome-opt.sel-blue{background:var(--blue-dim)!important;border-color:var(--blue)!important;color:var(--blue)!important}
+/* Fault confirmed */
+.fault-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fault-opt{border:1px solid var(--border2);border-radius:8px;padding:11px 12px;cursor:pointer;font-size:13px;font-weight:500;background:var(--surface2);transition:all .15s;color:var(--muted);text-align:center}
+.fault-opt:hover{background:var(--surface);color:var(--text)}
+.fault-opt.sel{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.fault-opt.sel-amber{background:var(--amber-dim)!important;border-color:var(--amber)!important;color:var(--amber)!important}
+.additional-wrap{margin-top:12px;display:none}
+.additional-wrap.visible{display:block}
+.chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.issue-chip{border:1px solid var(--border2);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;background:var(--surface2);color:var(--muted);transition:all .15s;font-family:var(--mono)}
+.issue-chip:hover{border-color:var(--accent);color:var(--text)}
+.issue-chip.sel{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+/* Root cause */
+.root-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.root-opt{border:1px solid var(--border2);border-radius:8px;padding:10px 12px;cursor:pointer;font-size:13px;font-weight:500;background:var(--surface2);transition:all .15s;color:var(--muted);text-align:center}
+.root-opt:hover{background:var(--surface);color:var(--text)}
+.root-opt.sel{background:var(--blue-dim);border-color:var(--blue);color:var(--blue)}
+/* Warranty toggle */
+.toggle-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toggle-opt{border:1px solid var(--border2);border-radius:8px;padding:13px;cursor:pointer;font-size:14px;font-weight:600;text-align:center;background:var(--surface2);transition:all .15s;color:var(--muted)}
+.toggle-opt:hover{background:var(--surface);color:var(--text)}
+.toggle-opt.sel-warranty{background:var(--accent-dim)!important;border-color:var(--accent)!important;color:var(--accent)!important}
+.toggle-opt.sel-chargeable{background:#2a1a3d!important;border-color:#7c3aed!important;color:#a78bfa!important}
+/* CS action */
+.cs-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cs-opt{border:1px solid var(--border2);border-radius:8px;padding:11px 12px;cursor:pointer;font-size:13px;font-weight:500;background:var(--surface2);transition:all .15s;color:var(--muted);text-align:center}
+.cs-opt:hover{background:var(--surface);color:var(--text)}
+.cs-opt.sel{background:var(--blue-dim);border-color:var(--blue);color:var(--blue)}
 .btn-primary{width:100%;background:var(--accent);color:#0a1f12;border:none;border-radius:8px;padding:14px;font-size:16px;font-weight:600;font-family:var(--sans);cursor:pointer;transition:opacity .15s,transform .1s;margin-top:8px}
 .btn-primary:active{transform:scale(.98)}
 .btn-primary:disabled{opacity:.4;cursor:not-allowed}
@@ -139,6 +167,11 @@ let intakeFiles = []
 let completionFiles = []
 let selectedTime = null
 let selectedOutcome = null
+let selectedFaultConfirmed = null
+let selectedIssueChips = new Set()
+let selectedRootCause = null
+let selectedWarranty = null
+let selectedCsAction = null
 
 ;(async () => {
   const { data: { session } } = await sb.auth.getSession()
@@ -222,6 +255,51 @@ function renderPage() {
         <div class="outcome-opt" data-val="Waiting for Parts" onclick="selectOutcome(this,'sel-amber')">Waiting for Parts</div>
         <div class="outcome-opt" data-val="Unrepairable" onclick="selectOutcome(this,'sel-red')">Unrepairable</div>
         <div class="outcome-opt" data-val="Referred" onclick="selectOutcome(this,'sel-blue')">Referred</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Fault Confirmed</div>
+      <div class="fault-grid">
+        <div class="fault-opt" data-val="confirmed" onclick="selectFault(this)">✓ Confirmed as reported</div>
+        <div class="fault-opt" data-val="additional" onclick="selectFault(this)">+ Additional issues found</div>
+        <div class="fault-opt" data-val="different" onclick="selectFault(this,'sel-amber')">↔ Different issue found</div>
+        <div class="fault-opt" data-val="no_fault" onclick="selectFault(this,'sel-amber')">✗ No fault found</div>
+      </div>
+      <div class="additional-wrap" id="additionalWrap">
+        <div class="chip-row" id="issueChips">
+          ${['Servicing required','Battery issue','Tyre wear','Loose components','Corrosion','General wear','Software issue','Other'].map(t =>
+            `<div class="issue-chip" data-tag="${t}" onclick="toggleChip(this)">${t}</div>`
+          ).join('')}
+        </div>
+        <textarea id="additionalNotes" rows="2" placeholder="Any other additional issues found…" style="margin-top:4px"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Root Cause</div>
+      <div class="root-grid">
+        ${[['Wear & Tear','wear'],['Component Failure','component'],['Accidental Damage','accidental'],['User Error','user'],['Manufacturing Defect','manufacturing'],['Unknown','unknown']].map(([label, val]) =>
+          `<div class="root-opt" data-val="${val}" onclick="selectRoot(this)">${label}</div>`
+        ).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Chargeable or Warranty</div>
+      <div class="toggle-row">
+        <div class="toggle-opt" data-val="warranty" onclick="selectWarranty(this,'sel-warranty')">🛡 Warranty</div>
+        <div class="toggle-opt" data-val="chargeable" onclick="selectWarranty(this,'sel-chargeable')">💳 Chargeable</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Recommended Action for CS</div>
+      <div class="cs-grid">
+        <div class="cs-opt" data-val="contact_customer" onclick="selectCs(this)">📞 Contact customer</div>
+        <div class="cs-opt" data-val="arrange_return" onclick="selectCs(this)">📦 Arrange return of chair</div>
+        <div class="cs-opt" data-val="raise_invoice" onclick="selectCs(this)">🧾 Raise invoice</div>
+        <div class="cs-opt" data-val="no_action" onclick="selectCs(this)">✓ No action required</div>
       </div>
     </div>
 
@@ -339,6 +417,38 @@ function selectOutcome(el, cls) {
   selectedOutcome = el.dataset.val
 }
 
+function selectFault(el, cls = 'sel') {
+  document.querySelectorAll('.fault-opt').forEach(o => o.className = 'fault-opt')
+  el.classList.add(cls)
+  selectedFaultConfirmed = el.dataset.val
+  const wrap = document.getElementById('additionalWrap')
+  wrap.classList.toggle('visible', selectedFaultConfirmed === 'additional')
+}
+
+function toggleChip(el) {
+  const tag = el.dataset.tag
+  if (selectedIssueChips.has(tag)) { selectedIssueChips.delete(tag); el.classList.remove('sel') }
+  else { selectedIssueChips.add(tag); el.classList.add('sel') }
+}
+
+function selectRoot(el) {
+  document.querySelectorAll('.root-opt').forEach(o => o.className = 'root-opt')
+  el.classList.add('sel')
+  selectedRootCause = el.dataset.val
+}
+
+function selectWarranty(el, cls) {
+  document.querySelectorAll('.toggle-opt').forEach(o => o.className = 'toggle-opt')
+  el.classList.add(cls)
+  selectedWarranty = el.dataset.val
+}
+
+function selectCs(el) {
+  document.querySelectorAll('.cs-opt').forEach(o => o.className = 'cs-opt')
+  el.classList.add('sel')
+  selectedCsAction = el.dataset.val
+}
+
 // Compress images before upload — reduces 4-10MB phone photos to ~300-500KB
 async function compressImage(file, maxPx = 1920, quality = 0.82) {
   if (file.type.startsWith('video')) return file
@@ -438,11 +548,21 @@ async function submitRepair() {
 
   const notes = document.getElementById('repairNotes').value.trim()
 
+  const additionalText = document.getElementById('additionalNotes')?.value?.trim() || null
+  const additionalIssues = selectedFaultConfirmed === 'additional'
+    ? [...selectedIssueChips, additionalText].filter(Boolean).join(', ') || null
+    : null
+
   const { data: repair, error: repairErr } = await sb.from('repairs').insert({
     order_id: ORDER_ID,
     technician_name: (await sb.auth.getUser()).data.user?.email?.split('@')[0] || 'Unknown',
     time_taken_minutes: selectedTime,
     outcome: selectedOutcome,
+    fault_confirmed: selectedFaultConfirmed,
+    additional_issues: additionalIssues,
+    root_cause: selectedRootCause,
+    is_warranty: selectedWarranty === 'warranty',
+    cs_action: selectedCsAction,
     notes: notes || null
   }).select().single()
 
