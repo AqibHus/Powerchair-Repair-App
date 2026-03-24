@@ -249,10 +249,6 @@ let lbItems = [], lbIndex = 0
           <div class="val">${fmtTime(repair.time_taken_minutes)}</div>
         </div>
         <div class="info-item">
-          <div class="lbl">Service Type</div>
-          <div class="val">${repair.service_type ? capitalize(repair.service_type) + ' Service' : '—'}</div>
-        </div>
-        <div class="info-item">
           <div class="lbl">Outcome</div>
           <div class="val"><span class="pill ${outcomeInfo(repair.outcome||'').cls}">${esc(repair.outcome||'—')}</span></div>
         </div>

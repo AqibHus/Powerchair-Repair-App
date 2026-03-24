@@ -138,7 +138,6 @@ let selectedParts = []
 let intakeFiles = []
 let completionFiles = []
 let selectedTime = null
-let selectedService = null
 let selectedOutcome = null
 
 ;(async () => {
@@ -215,19 +214,6 @@ function renderPage() {
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-label">Service Type</div>
-      <div class="service-grid">
-        <div class="service-opt" id="svc-light" onclick="selectService('light')">
-          <div class="service-title">Light Service</div>
-          <div class="service-sub">Cleaning, adjustment, minor fix</div>
-        </div>
-        <div class="service-opt" id="svc-heavy" onclick="selectService('heavy')">
-          <div class="service-title">Heavy Service</div>
-          <div class="service-sub">Parts replacement, major repair</div>
-        </div>
-      </div>
-    </div>
 
     <div class="card">
       <div class="card-label">Outcome</div>
@@ -347,13 +333,6 @@ function selectTime(el) {
   selectedTime = parseInt(el.dataset.mins)
 }
 
-function selectService(type) {
-  document.getElementById('svc-light').className = 'service-opt'
-  document.getElementById('svc-heavy').className = 'service-opt'
-  document.getElementById(`svc-${type}`).classList.add(type === 'light' ? 'sel-light' : 'sel-heavy')
-  selectedService = type
-}
-
 function selectOutcome(el, cls) {
   document.querySelectorAll('.outcome-opt').forEach(o => o.className = 'outcome-opt')
   el.classList.add(cls)
@@ -463,7 +442,6 @@ async function submitRepair() {
     order_id: ORDER_ID,
     technician_name: (await sb.auth.getUser()).data.user?.email?.split('@')[0] || 'Unknown',
     time_taken_minutes: selectedTime,
-    service_type: selectedService,
     outcome: selectedOutcome,
     notes: notes || null
   }).select().single()
