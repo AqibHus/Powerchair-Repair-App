@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Job Detail — eTech Mobility</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222;--border:#2e2e2e;--border2:#3a3a3a;--text:#f0f0f0;--muted:#888;--accent:#4ade80;--accent-dim:#1a3d28;--amber:#fbbf24;--amber-dim:#3d2f0a;--red:#f87171;--red-dim:#2a1515;--blue:#60a5fa;--blue-dim:#1a2a3d;--radius:10px;--mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;padding-bottom:40px}
+.nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px}
+.back-btn{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:4px 8px 4px 0;line-height:1;transition:color .15s}
+.back-btn:hover{color:var(--text)}
+.nav-title{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.04em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.page{padding:20px;max-width:700px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.card-label{font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.order-banner{background:var(--accent-dim);border:1px solid #2d5e3f;border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+.order-id{font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:10px;letter-spacing:.06em}
+.order-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:600px){.order-grid{grid-template-columns:repeat(3,1fr)}}
+.order-item .lbl{font-size:11px;color:#5a9e72;margin-bottom:3px;font-family:var(--mono)}
+.order-item .val{font-size:13px;color:var(--text);font-weight:500}
+.status-badge{display:inline-block;font-size:11px;font-family:var(--mono);padding:3px 8px;border-radius:4px}
+.tag-pending{background:var(--surface2);color:var(--muted);border:1px solid var(--border2)}
+.tag-intake{background:var(--blue-dim);color:var(--blue)}
+.tag-progress{background:var(--amber-dim);color:var(--amber)}
+.tag-completed{background:var(--accent-dim);color:var(--accent);border:1px solid #2d5e3f}
+label{display:block;font-size:11px;font-family:var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:15px;padding:12px 14px;outline:none;transition:border-color .15s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:none;line-height:1.5}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
+.field{margin-bottom:16px}
+.media-upload-area{border:1.5px dashed var(--border2);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color .15s;position:relative}
+.media-upload-area:hover{border-color:var(--accent)}
+.media-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:28px;margin-bottom:8px}
+.upload-label{font-size:14px;color:var(--text);margin-bottom:4px;font-weight:500}
+.upload-sub{font-size:12px;color:var(--muted)}
+.media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+@media(min-width:480px){.media-grid{grid-template-columns:repeat(4,1fr)}}
+.media-thumb{aspect-ratio:1;border-radius:6px;overflow:hidden;background:var(--surface2);position:relative}
+.media-thumb img{width:100%;height:100%;object-fit:cover}
+.media-thumb video{width:100%;height:100%;object-fit:cover}
+.media-thumb .remove-media{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.7);border:none;color:#fff;border-radius:50%;width:22px;height:22px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.media-thumb .video-badge{position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,.7);border-radius:3px;font-size:10px;padding:1px 5px;color:#fff;font-family:var(--mono)}
+.upload-progress{margin-top:8px;font-size:12px;color:var(--muted);text-align:center;display:none}
+.search-wrap{position:relative}
+.search-input-parts{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:15px;padding:12px 14px;outline:none;transition:border-color .15s;-webkit-appearance:none}
+.search-input-parts:focus{border-color:var(--accent)}
+.parts-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:8px;z-index:50;max-height:240px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.parts-dropdown.open{display:block}
+.part-opt{padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s}
+.part-opt:last-child{border-bottom:none}
+.part-opt:hover{background:var(--surface2)}
+.part-opt-name{font-size:14px;margin-bottom:3px}
+.part-opt-sku{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.part-opt-stock{display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;margin-left:6px;font-family:var(--mono)}
+.stock-ok{background:var(--accent-dim);color:var(--accent)}
+.stock-low{background:var(--amber-dim);color:var(--amber)}
+.stock-zero{background:var(--red-dim);color:var(--red)}
+.no-results{padding:14px;font-size:13px;color:var(--muted);text-align:center}
+.parts-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+.parts-table th{text-align:left;font-size:11px;font-family:var(--mono);color:var(--muted);padding:0 8px 8px;font-weight:400}
+.parts-table th:last-child{width:36px}
+.parts-table td{padding:8px;border-top:1px solid var(--border);vertical-align:middle}
+.parts-table tr:first-child td{border-top:none}
+.sku-badge{font-family:var(--mono);font-size:11px;color:var(--muted);display:block;margin-top:2px}
+.qty-input{width:54px;text-align:center;padding:7px 8px;font-size:14px}
+.remove-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px;transition:color .15s}
+.remove-btn:hover{color:var(--red)}
+.empty-parts{text-align:center;padding:20px;color:var(--muted);font-size:13px;font-style:italic}
+.time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.time-chip{border:1px solid var(--border2);border-radius:8px;padding:10px 4px;text-align:center;cursor:pointer;font-size:13px;font-family:var(--mono);color:var(--muted);background:var(--surface2);transition:all .15s}
+.time-chip:hover{border-color:var(--accent);color:var(--text)}
+.time-chip.sel{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);font-weight:500}
+.service-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.service-opt{border:1px solid var(--border2);border-radius:8px;padding:14px 16px;cursor:pointer;transition:all .15s;background:var(--surface2)}
+.service-opt:hover{background:var(--surface)}
+.service-title{font-size:14px;font-weight:500;margin-bottom:3px}
+.service-sub{font-size:12px;color:var(--muted)}
+.sel-light{background:var(--blue-dim)!important;border-color:var(--blue)!important}
+.sel-light .service-title{color:var(--blue)}
+.sel-heavy{background:var(--amber-dim)!important;border-color:var(--amber)!important}
+.sel-heavy .service-title{color:var(--amber)}
+.outcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.outcome-opt{border:1px solid var(--border2);border-radius:8px;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:500;text-align:center;background:var(--surface2);transition:all .15s;color:var(--muted)}
+.outcome-opt:hover{background:var(--surface);color:var(--text)}
+.outcome-opt.sel{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.outcome-opt.sel-amber{background:var(--amber-dim)!important;border-color:var(--amber)!important;color:var(--amber)!important}
+.outcome-opt.sel-red{background:var(--red-dim)!important;border-color:var(--red)!important;color:var(--red)!important}
+.outcome-opt.sel-blue{background:var(--blue-dim)!important;border-color:var(--blue)!important;color:var(--blue)!important}
+.btn-primary{width:100%;background:var(--accent);color:#0a1f12;border:none;border-radius:8px;padding:14px;font-size:16px;font-weight:600;font-family:var(--sans);cursor:pointer;transition:opacity .15s,transform .1s;margin-top:8px}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-secondary{width:100%;background:none;color:var(--muted);border:1px solid var(--border2);border-radius:8px;padding:13px;font-size:14px;font-family:var(--sans);cursor:pointer;transition:border-color .15s,color .15s;margin-top:8px}
+.btn-secondary:hover{border-color:var(--text);color:var(--text)}
+.loader{display:flex;align-items:center;justify-content:center;padding:80px 20px;gap:12px;color:var(--muted);font-size:13px}
+.spinner{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.completed-banner{background:var(--accent-dim);border:1px solid #2d5e3f;border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
+.completed-banner .icon{font-size:24px}
+.completed-banner .text{flex:1}
+.completed-banner .title{font-size:15px;font-weight:600;color:var(--accent);margin-bottom:3px}
+.completed-banner .sub{font-size:13px;color:#5a9e72}
+.view-report-btn{display:block;width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:13px;font-size:14px;font-family:var(--sans);cursor:pointer;transition:border-color .15s,color .15s;color:var(--text);text-align:center;text-decoration:none}
+.view-report-btn:hover{border-color:var(--accent);color:var(--accent)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:14px;color:var(--text);z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <button class="back-btn" onclick="window.location.href='app.html'">‹</button>
+  <span class="nav-title" id="navTitle">Loading…</span>
+</nav>
+
+<div class="page" id="pageContent">
+  <div class="loader"><div class="spinner"></div>Loading job…</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://xndqyqdqturqqnltvqvd.supabase.co'
+const SUPABASE_KEY = 'sb_publishable_JFdevwgCqf3plTIcmxGJ_A_h6sLuodl'
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+const params = new URLSearchParams(location.search)
+const ORDER_ID = params.get('id')
+
+let order = null
+let allParts = []
+let selectedParts = []
+let intakeFiles = []
+let completionFiles = []
+let selectedTime = null
+let selectedService = null
+let selectedOutcome = null
+
+;(async () => {
+  const { data: { session } } = await sb.auth.getSession()
+  if (!session) { window.location.href = 'index.html'; return }
+  if (!ORDER_ID) { window.location.href = 'app.html'; return }
+  await Promise.all([loadOrder(), loadParts()])
+})()
+
+async function loadOrder() {
+  const { data, error } = await sb.from('orders').select('*').eq('id', ORDER_ID).single()
+  if (error || !data) { window.location.href = 'app.html'; return }
+  order = data
+  renderPage()
+}
+
+async function loadParts() {
+  const { data } = await sb.from('parts').select('id,sku,name,compatible_models,stock_qty').order('name')
+  allParts = data || []
+}
+
+function renderPage() {
+  document.getElementById('navTitle').textContent = `${order.customer_name || 'Unknown'} — ${order.chair_model}`
+  const el = document.getElementById('pageContent')
+
+  if (order.status === 'completed') {
+    el.innerHTML = `
+      <div class="order-banner">${orderBannerHTML()}</div>
+      <div class="completed-banner">
+        <div class="icon">✓</div>
+        <div class="text">
+          <div class="title">Repair Completed</div>
+          <div class="sub">Submitted and logged</div>
+        </div>
+      </div>
+      <a class="view-report-btn" href="report.html?id=${ORDER_ID}">View Report →</a>`
+    return
+  }
+
+  el.innerHTML = `
+    <div class="order-banner">${orderBannerHTML()}</div>
+
+    <div class="card">
+      <div class="card-label">Arrival Media</div>
+      <div class="media-upload-area" id="intakeUploadArea">
+        <input type="file" accept="image/*,video/*" multiple id="intakeInput" onchange="handleFiles('intake', this.files)">
+        <div class="upload-icon">📷</div>
+        <div class="upload-label">Photos &amp; video on arrival</div>
+        <div class="upload-sub">Tap to take photos or choose from library</div>
+      </div>
+      <div class="upload-progress" id="intakeProgress">Uploading…</div>
+      <div class="media-grid" id="intakeGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Parts Used</div>
+      <div class="search-wrap">
+        <input class="search-input-parts" type="search" id="partsSearch" placeholder="Search parts…" autocomplete="off"
+          oninput="searchParts(this.value)" onfocus="searchParts(this.value)" autocorrect="off" autocapitalize="off">
+        <div class="parts-dropdown" id="partsDropdown"></div>
+      </div>
+      <table class="parts-table">
+        <thead><tr><th>Part</th><th>Qty</th><th></th></tr></thead>
+        <tbody id="partsBody"><tr><td colspan="3"><div class="empty-parts">No parts added yet</div></td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Time Taken</div>
+      <div class="time-grid">
+        ${['30m','1hr','1.5hr','2hr','2.5hr','3hr','4hr','4hr+'].map((t,i) =>
+          `<div class="time-chip" data-mins="${[30,60,90,120,150,180,240,300][i]}" onclick="selectTime(this)">${t}</div>`
+        ).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Service Type</div>
+      <div class="service-grid">
+        <div class="service-opt" id="svc-light" onclick="selectService('light')">
+          <div class="service-title">Light Service</div>
+          <div class="service-sub">Cleaning, adjustment, minor fix</div>
+        </div>
+        <div class="service-opt" id="svc-heavy" onclick="selectService('heavy')">
+          <div class="service-title">Heavy Service</div>
+          <div class="service-sub">Parts replacement, major repair</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Outcome</div>
+      <div class="outcome-grid">
+        <div class="outcome-opt" data-val="Repaired" onclick="selectOutcome(this,'sel')">Repaired ✓</div>
+        <div class="outcome-opt" data-val="Waiting for Parts" onclick="selectOutcome(this,'sel-amber')">Waiting for Parts</div>
+        <div class="outcome-opt" data-val="Unrepairable" onclick="selectOutcome(this,'sel-red')">Unrepairable</div>
+        <div class="outcome-opt" data-val="Referred" onclick="selectOutcome(this,'sel-blue')">Referred</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Notes</div>
+      <textarea id="repairNotes" rows="4" placeholder="Any additional notes about the repair…"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Completion Media</div>
+      <div class="media-upload-area">
+        <input type="file" accept="image/*,video/*" multiple id="completionInput" onchange="handleFiles('completion', this.files)">
+        <div class="upload-icon">✅</div>
+        <div class="upload-label">Photos &amp; video after repair</div>
+        <div class="upload-sub">Tap to take photos or choose from library</div>
+      </div>
+      <div class="upload-progress" id="completionProgress">Uploading…</div>
+      <div class="media-grid" id="completionGrid"></div>
+    </div>
+
+    <button class="btn-primary" id="submitBtn" onclick="submitRepair()">Submit Repair</button>
+    <button class="btn-secondary" onclick="window.location.href='app.html'">Back to Queue</button>
+  `
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-wrap')) closeDropdown()
+  })
+}
+
+function orderBannerHTML() {
+  const statusClass = { pending:'tag-pending', intake:'tag-intake', in_progress:'tag-progress', completed:'tag-completed' }[order.status] || 'tag-pending'
+  const statusLabel = { pending:'Pending', intake:'Intake', in_progress:'In Progress', completed:'Completed' }[order.status] || order.status
+  return `
+    <div class="order-id">JOB #${ORDER_ID.slice(-8).toUpperCase()}${order.zendesk_ticket_id ? ' · ZD #'+order.zendesk_ticket_id : ''}</div>
+    <div class="order-grid">
+      <div class="order-item"><div class="lbl">Customer</div><div class="val">${esc(order.customer_name||'—')}</div></div>
+      <div class="order-item"><div class="lbl">Model</div><div class="val">${esc(order.chair_model)}</div></div>
+      <div class="order-item"><div class="lbl">Status</div><div class="val"><span class="status-badge ${statusClass}">${statusLabel}</span></div></div>
+      <div class="order-item" style="grid-column:1/-1"><div class="lbl">Fault</div><div class="val">${esc(order.fault_reported||'—')}</div></div>
+    </div>`
+}
+
+function searchParts(q) {
+  const dd = document.getElementById('partsDropdown')
+  if (!q.trim()) { dd.innerHTML = ''; dd.classList.remove('open'); return }
+  const matches = allParts.filter(p =>
+    p.name.toLowerCase().includes(q.toLowerCase()) ||
+    p.sku.toLowerCase().includes(q.toLowerCase()) ||
+    (p.compatible_models||'').toLowerCase().includes(q.toLowerCase())
+  ).slice(0, 20)
+  if (!matches.length) {
+    dd.innerHTML = '<div class="no-results">No parts found</div>'
+  } else {
+    dd.innerHTML = matches.map(p => {
+      const stock = p.stock_qty
+      const stockClass = stock > 5 ? 'stock-ok' : stock > 0 ? 'stock-low' : 'stock-zero'
+      const stockLabel = stock > 0 ? `${stock} in stock` : 'out of stock'
+      return `<div class="part-opt" onclick="addPart('${p.id}')">
+        <div class="part-opt-name">${esc(p.name)}<span class="part-opt-stock ${stockClass}">${stockLabel}</span></div>
+        <div class="part-opt-sku">${esc(p.sku)}${p.compatible_models ? ' · '+esc(p.compatible_models) : ''}</div>
+      </div>`
+    }).join('')
+  }
+  dd.classList.add('open')
+}
+
+function closeDropdown() {
+  const dd = document.getElementById('partsDropdown')
+  if (dd) { dd.classList.remove('open'); dd.innerHTML = '' }
+}
+
+function addPart(partId) {
+  closeDropdown()
+  document.getElementById('partsSearch').value = ''
+  if (selectedParts.find(p => p.id === partId)) { showToast('Already added'); return }
+  const part = allParts.find(p => p.id === partId)
+  if (!part) return
+  selectedParts.push({ id: part.id, sku: part.sku, name: part.name, qty: 1 })
+  renderPartsTable()
+}
+
+function removePart(id) {
+  selectedParts = selectedParts.filter(p => p.id !== id)
+  renderPartsTable()
+}
+
+function updateQty(id, val) {
+  const p = selectedParts.find(p => p.id === id)
+  if (p) p.qty = Math.max(1, parseInt(val)||1)
+}
+
+function renderPartsTable() {
+  const tbody = document.getElementById('partsBody')
+  if (!selectedParts.length) {
+    tbody.innerHTML = '<tr><td colspan="3"><div class="empty-parts">No parts added yet</div></td></tr>'
+    return
+  }
+  tbody.innerHTML = selectedParts.map(p => `
+    <tr>
+      <td><span>${esc(p.name)}</span><span class="sku-badge">${esc(p.sku)}</span></td>
+      <td><input class="qty-input" type="number" min="1" value="${p.qty}" onchange="updateQty('${p.id}', this.value)" oninput="updateQty('${p.id}', this.value)"></td>
+      <td><button class="remove-btn" onclick="removePart('${p.id}')">×</button></td>
+    </tr>`).join('')
+}
+
+function selectTime(el) {
+  document.querySelectorAll('.time-chip').forEach(c => c.classList.remove('sel'))
+  el.classList.add('sel')
+  selectedTime = parseInt(el.dataset.mins)
+}
+
+function selectService(type) {
+  document.getElementById('svc-light').className = 'service-opt'
+  document.getElementById('svc-heavy').className = 'service-opt'
+  document.getElementById(`svc-${type}`).classList.add(type === 'light' ? 'sel-light' : 'sel-heavy')
+  selectedService = type
+}
+
+function selectOutcome(el, cls) {
+  document.querySelectorAll('.outcome-opt').forEach(o => o.className = 'outcome-opt')
+  el.classList.add(cls)
+  selectedOutcome = el.dataset.val
+}
+
+async function handleFiles(stage, files) {
+  if (!files.length) return
+  const progressEl = document.getElementById(`${stage}Progress`)
+  const gridEl = document.getElementById(`${stage}Grid`)
+  progressEl.style.display = 'block'
+  progressEl.textContent = `Uploading 0 / ${files.length}…`
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    const ext = file.name.split('.').pop() || (file.type.includes('video') ? 'mp4' : 'jpg')
+    const filename = `${Date.now()}_${i}.${ext}`
+    const path = `${ORDER_ID}/${stage}/${filename}`
+    const { error } = await sb.storage.from('repairs').upload(path, file, { contentType: file.type, upsert: true })
+    if (error) { showToast('Upload failed: ' + error.message); continue }
+    const { data: { publicUrl } } = sb.storage.from('repairs').getPublicUrl(path)
+
+    if (stage === 'intake') intakeFiles.push({ path, url: publicUrl, type: file.type })
+    else completionFiles.push({ path, url: publicUrl, type: file.type })
+
+    await sb.from('media').insert({ order_id: ORDER_ID, stage, media_type: file.type.startsWith('video') ? 'video' : 'photo', storage_path: path })
+    if (order.status === 'pending' && stage === 'intake') {
+      await sb.from('orders').update({ status: 'in_progress' }).eq('id', ORDER_ID)
+      order.status = 'in_progress'
+      document.getElementById('navTitle').textContent = `${order.customer_name||'Unknown'} — ${order.chair_model}`
+    }
+
+    progressEl.textContent = `Uploading ${i+1} / ${files.length}…`
+    renderMediaGrid(stage)
+  }
+  progressEl.textContent = `${files.length} file${files.length>1?'s':''} uploaded`
+  setTimeout(() => { progressEl.style.display = 'none' }, 2000)
+}
+
+function renderMediaGrid(stage) {
+  const files = stage === 'intake' ? intakeFiles : completionFiles
+  const gridEl = document.getElementById(`${stage}Grid`)
+  gridEl.innerHTML = files.map((f, i) => `
+    <div class="media-thumb">
+      ${f.type.startsWith('video')
+        ? `<video src="${f.url}" muted playsinline></video><span class="video-badge">VIDEO</span>`
+        : `<img src="${f.url}" alt="media">`}
+      <button class="remove-media" onclick="removeMedia('${stage}',${i})">×</button>
+    </div>`).join('')
+}
+
+function removeMedia(stage, idx) {
+  if (stage === 'intake') intakeFiles.splice(idx, 1)
+  else completionFiles.splice(idx, 1)
+  renderMediaGrid(stage)
+}
+
+async function submitRepair() {
+  if (!selectedOutcome) { showToast('Please select an outcome'); return }
+  if (!selectedTime) { showToast('Please select time taken'); return }
+
+  const btn = document.getElementById('submitBtn')
+  btn.disabled = true; btn.textContent = 'Submitting…'
+
+  const notes = document.getElementById('repairNotes').value.trim()
+
+  const { data: repair, error: repairErr } = await sb.from('repairs').insert({
+    order_id: ORDER_ID,
+    technician_name: (await sb.auth.getUser()).data.user?.email?.split('@')[0] || 'Unknown',
+    time_taken_minutes: selectedTime,
+    service_type: selectedService,
+    outcome: selectedOutcome,
+    notes: notes || null
+  }).select().single()
+
+  if (repairErr) { showToast('Error: ' + repairErr.message); btn.disabled = false; btn.textContent = 'Submit Repair'; return }
+
+  for (const part of selectedParts) {
+    await sb.from('repair_parts').insert({ repair_id: repair.id, part_id: part.id, quantity_used: part.qty })
+    await sb.from('stock_movements').insert({ part_id: part.id, quantity: -part.qty, movement_type: 'repair', repair_id: repair.id })
+    const { data: partData } = await sb.from('parts').select('stock_qty').eq('id', part.id).single()
+    if (partData) await sb.from('parts').update({ stock_qty: partData.stock_qty - part.qty }).eq('id', part.id)
+  }
+
+  await sb.from('orders').update({ status: 'completed' }).eq('id', ORDER_ID)
+
+  showToast('Repair submitted ✓')
+  setTimeout(() => { window.location.href = `report.html?id=${ORDER_ID}` }, 1000)
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast')
+  t.textContent = msg; t.classList.add('show')
+  setTimeout(() => t.classList.remove('show'), 2500)
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+</script>
+</body>
+</html>

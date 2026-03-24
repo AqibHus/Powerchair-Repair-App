@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>eTech Mobility — Jobs</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222;--border:#2e2e2e;--border2:#3a3a3a;--text:#f0f0f0;--muted:#888;--accent:#4ade80;--accent-dim:#1a3d28;--amber:#fbbf24;--amber-dim:#3d2f0a;--red:#f87171;--blue:#60a5fa;--blue-dim:#1a2a3d;--radius:10px;--mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;padding-bottom:80px}
+.nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.08em}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-user{font-size:12px;color:var(--muted)}
+.nav-logout{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:var(--sans);padding:4px 8px;border-radius:4px;transition:color .15s}
+.nav-logout:hover{color:var(--text)}
+.page{padding:20px;max-width:700px;margin:0 auto}
+.page-header{margin-bottom:20px}
+.page-title{font-size:20px;font-weight:600;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--muted)}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px;margin-bottom:16px}
+.tab{flex:1;text-align:center;padding:8px 4px;border-radius:6px;font-size:13px;font-family:var(--mono);color:var(--muted);cursor:pointer;transition:all .15s;border:none;background:none}
+.tab.active{background:var(--surface2);color:var(--text)}
+.search-wrap{position:relative;margin-bottom:16px}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:15px}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:14px;padding:10px 14px 10px 40px;outline:none;transition:border-color .15s;-webkit-appearance:none}
+.search-input:focus{border-color:var(--accent)}
+.jobs-list{display:flex;flex-direction:column;gap:10px}
+.job-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;cursor:pointer;transition:border-color .15s,background .15s;display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:inherit}
+.job-card:hover{border-color:var(--accent);background:var(--surface2)}
+.job-left{flex:1;min-width:0}
+.job-customer{font-size:15px;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.job-model{font-size:12px;font-family:var(--mono);color:var(--accent);margin-bottom:4px}
+.job-fault{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.job-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.tag{font-size:11px;font-family:var(--mono);padding:3px 8px;border-radius:4px;white-space:nowrap}
+.tag-pending{background:var(--surface2);color:var(--muted);border:1px solid var(--border2)}
+.tag-intake{background:var(--blue-dim);color:var(--blue)}
+.tag-progress{background:var(--amber-dim);color:var(--amber)}
+.tag-completed{background:var(--accent-dim);color:var(--accent)}
+.tag-cancelled{background:#2a1515;color:var(--red)}
+.job-date{font-size:11px;color:var(--muted)}
+.chevron{color:var(--border2);flex-shrink:0;font-size:18px}
+.loader{display:flex;align-items:center;justify-content:center;padding:60px 20px;gap:12px;color:var(--muted);font-size:13px}
+.spinner{width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:36px;margin-bottom:12px}
+.empty-title{font-size:16px;color:var(--text);margin-bottom:6px;font-weight:500}
+.empty-sub{font-size:13px}
+.fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--accent);border:none;color:#0a1f12;font-size:28px;line-height:1;cursor:pointer;box-shadow:0 4px 20px rgba(74,222,128,.3);transition:transform .15s,opacity .15s;display:flex;align-items:center;justify-content:center;font-weight:300;z-index:50}
+.fab:hover{transform:scale(1.05)}
+.fab:active{transform:scale(.95)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:flex-end;padding:0;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border-radius:16px 16px 0 0;padding:24px 20px 40px;width:100%;max-width:700px;margin:0 auto;transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.modal-bg.open .modal{transform:translateY(0)}
+@media(min-width:600px){.modal-bg{align-items:center;padding:20px}.modal{border-radius:14px;max-width:480px;transform:translateY(20px) scale(.97)}.modal-bg.open .modal{transform:translateY(0) scale(1)}}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px;display:block}
+@media(min-width:600px){.modal-handle{display:none}}
+.modal-title{font-size:18px;font-weight:600;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+label{display:block;font-size:11px;font-family:var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:15px;padding:12px 14px;outline:none;transition:border-color .15s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
+textarea{resize:none;min-height:80px;line-height:1.5}
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+.btn-primary{width:100%;background:var(--accent);color:#0a1f12;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:600;font-family:var(--sans);cursor:pointer;transition:opacity .15s;margin-top:8px}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-secondary{width:100%;background:none;color:var(--muted);border:1px solid var(--border2);border-radius:8px;padding:13px;font-size:14px;font-family:var(--sans);cursor:pointer;transition:border-color .15s,color .15s;margin-top:8px}
+.btn-secondary:hover{border-color:var(--text);color:var(--text)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <span class="nav-brand">ETECH MOBILITY</span>
+  <div class="nav-right">
+    <span class="nav-user" id="navUser"></span>
+    <button class="nav-logout" onclick="logout()">Sign out</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-title">Job Queue <span class="live-dot"></span></div>
+    <div class="page-sub" id="pageCount">Loading…</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-status="all" onclick="setTab(this)">All</button>
+    <button class="tab" data-status="pending" onclick="setTab(this)">Pending</button>
+    <button class="tab" data-status="in_progress" onclick="setTab(this)">In Progress</button>
+    <button class="tab" data-status="completed" onclick="setTab(this)">Done</button>
+  </div>
+
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input class="search-input" type="search" id="searchInput" placeholder="Search customer, model, fault…" oninput="filterJobs()">
+  </div>
+
+  <div id="jobsList"><div class="loader"><div class="spinner"></div>Loading jobs…</div></div>
+</div>
+
+<button class="fab" onclick="openModal()" title="New Job">+</button>
+
+<div class="modal-bg" id="modalBg" onclick="handleModalBgClick(event)">
+  <div class="modal">
+    <span class="modal-handle"></span>
+    <div class="modal-title">New Job</div>
+    <div class="modal-sub">Create a repair job manually</div>
+    <div class="field">
+      <label>Customer Name</label>
+      <input type="text" id="newCustomer" placeholder="e.g. John Smith" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Customer Email <span style="color:var(--border2)">(optional)</span></label>
+      <input type="email" id="newEmail" placeholder="customer@example.com">
+    </div>
+    <div class="field">
+      <label>Chair Model</label>
+      <select id="newModel">
+        <option value="">Select model…</option>
+        <option>EA9000 (F9)</option>
+        <option>Freedom Elite</option>
+        <option>Freedom Pro</option>
+        <option>LiteMax</option>
+        <option>LitePro</option>
+        <option>Firefly</option>
+        <option>Enterprise 200</option>
+        <option>Y20 Luxe</option>
+        <option>Voyager 185</option>
+        <option>Mobility Scooter</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Fault Reported</label>
+      <textarea id="newFault" placeholder="Describe the fault…" rows="3"></textarea>
+    </div>
+    <button class="btn-primary" id="createBtn" onclick="createJob()">Create Job</button>
+    <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://xndqyqdqturqqnltvqvd.supabase.co'
+const SUPABASE_KEY = 'sb_publishable_JFdevwgCqf3plTIcmxGJ_A_h6sLuodl'
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+let allJobs = []
+let currentTab = 'all'
+let realtimeSub = null
+
+;(async () => {
+  const { data: { session } } = await sb.auth.getSession()
+  if (!session) { window.location.href = 'index.html'; return }
+  const email = session.user.email
+  document.getElementById('navUser').textContent = email.split('@')[0]
+  await loadJobs()
+  setupRealtime()
+})()
+
+async function loadJobs() {
+  const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: false })
+  if (error) { console.error(error); return }
+  allJobs = data || []
+  renderJobs()
+}
+
+function setTab(el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  el.classList.add('active')
+  currentTab = el.dataset.status
+  document.getElementById('searchInput').value = ''
+  renderJobs()
+}
+
+function filterJobs() { renderJobs() }
+
+function renderJobs() {
+  const q = document.getElementById('searchInput').value.toLowerCase()
+  let jobs = allJobs
+  if (currentTab !== 'all') jobs = jobs.filter(j => j.status === currentTab)
+  if (q) jobs = jobs.filter(j =>
+    (j.customer_name||'').toLowerCase().includes(q) ||
+    (j.chair_model||'').toLowerCase().includes(q) ||
+    (j.fault_reported||'').toLowerCase().includes(q)
+  )
+  const el = document.getElementById('jobsList')
+  document.getElementById('pageCount').textContent = `${jobs.length} job${jobs.length !== 1 ? 's' : ''}`
+  if (!jobs.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No jobs found</div><div class="empty-sub">${currentTab === 'all' ? 'Tap + to create the first job' : 'Nothing in this status'}</div></div>`
+    return
+  }
+  el.innerHTML = jobs.map(j => `
+    <a class="job-card" href="job.html?id=${j.id}">
+      <div class="job-left">
+        <div class="job-customer">${esc(j.customer_name || 'Unknown Customer')}</div>
+        <div class="job-model">${esc(j.chair_model)}</div>
+        <div class="job-fault">${esc(j.fault_reported || 'No fault description')}</div>
+      </div>
+      <div class="job-right">
+        <span class="tag ${tagClass(j.status)}">${tagLabel(j.status)}</span>
+        <span class="job-date">${fmtDate(j.created_at)}</span>
+      </div>
+      <span class="chevron">›</span>
+    </a>`).join('')
+}
+
+function tagClass(s) {
+  return { pending:'tag-pending', intake:'tag-intake', in_progress:'tag-progress', completed:'tag-completed', cancelled:'tag-cancelled' }[s] || 'tag-pending'
+}
+function tagLabel(s) {
+  return { pending:'Pending', intake:'Intake', in_progress:'In Progress', completed:'Done', cancelled:'Cancelled' }[s] || s
+}
+function fmtDate(d) {
+  const dt = new Date(d)
+  const now = new Date()
+  const diff = now - dt
+  if (diff < 60000) return 'just now'
+  if (diff < 3600000) return `${Math.floor(diff/60000)}m ago`
+  if (diff < 86400000) return `${Math.floor(diff/3600000)}h ago`
+  return dt.toLocaleDateString('en-GB', { day:'numeric', month:'short' })
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+function setupRealtime() {
+  realtimeSub = sb.channel('orders').on('postgres_changes', { event:'*', schema:'public', table:'orders' }, () => loadJobs()).subscribe()
+}
+
+async function createJob() {
+  const btn = document.getElementById('createBtn')
+  const customer = document.getElementById('newCustomer').value.trim()
+  const email = document.getElementById('newEmail').value.trim()
+  const model = document.getElementById('newModel').value
+  const fault = document.getElementById('newFault').value.trim()
+  if (!customer || !model) { alert('Customer name and chair model are required.'); return }
+  btn.disabled = true; btn.textContent = 'Creating…'
+  const { data, error } = await sb.from('orders').insert({
+    customer_name: customer,
+    customer_email: email || null,
+    chair_model: model,
+    fault_reported: fault || null,
+    status: 'pending'
+  }).select().single()
+  btn.disabled = false; btn.textContent = 'Create Job'
+  if (error) { alert('Error: ' + error.message); return }
+  closeModal()
+  clearModal()
+  window.location.href = `job.html?id=${data.id}`
+}
+
+function openModal() { document.getElementById('modalBg').classList.add('open') }
+function closeModal() { document.getElementById('modalBg').classList.remove('open') }
+function handleModalBgClick(e) { if (e.target === document.getElementById('modalBg')) closeModal() }
+function clearModal() {
+  ['newCustomer','newEmail','newFault'].forEach(id => document.getElementById(id).value = '')
+  document.getElementById('newModel').value = ''
+}
+
+async function logout() {
+  await sb.auth.signOut()
+  window.location.href = 'index.html'
+}
+</script>
+</body>
+</html>

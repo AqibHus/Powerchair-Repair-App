@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Repair Report — eTech Mobility</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222;--border:#2e2e2e;--border2:#3a3a3a;--text:#f0f0f0;--muted:#888;--accent:#4ade80;--accent-dim:#1a3d28;--amber:#fbbf24;--amber-dim:#3d2f0a;--red:#f87171;--blue:#60a5fa;--blue-dim:#1a2a3d;--radius:10px;--mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;padding-bottom:40px}
+.header{border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;max-width:700px;margin:0 auto}
+.brand{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em}
+.brand-name{font-size:15px;font-weight:600;font-family:var(--sans);color:var(--text);margin-top:2px;letter-spacing:-.01em}
+.report-label{font-size:11px;font-family:var(--mono);color:var(--muted);letter-spacing:.06em}
+.page{padding:20px;max-width:700px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.card-label{font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(min-width:480px){.info-grid{grid-template-columns:repeat(3,1fr)}}
+.info-item .lbl{font-size:11px;color:var(--muted);margin-bottom:3px;font-family:var(--mono)}
+.info-item .val{font-size:14px;color:var(--text);font-weight:500}
+.info-item.full{grid-column:1/-1}
+.tag{font-size:11px;font-family:var(--mono);padding:3px 8px;border-radius:4px;display:inline-block}
+.tag-completed{background:var(--accent-dim);color:var(--accent)}
+.tag-amber{background:var(--amber-dim);color:var(--amber)}
+.tag-red{background:#2a1515;color:var(--red)}
+.tag-blue{background:var(--blue-dim);color:var(--blue)}
+.media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(min-width:480px){.media-grid{grid-template-columns:repeat(4,1fr)}}
+.media-thumb{aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--surface2);cursor:pointer;position:relative}
+.media-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .2s}
+.media-thumb:hover img{transform:scale(1.03)}
+.media-thumb video{width:100%;height:100%;object-fit:cover}
+.video-badge{position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,.75);border-radius:3px;font-size:10px;padding:2px 6px;color:#fff;font-family:var(--mono)}
+.play-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(0,0,0,.3)}
+.no-media{text-align:center;padding:24px;color:var(--muted);font-size:13px;font-style:italic}
+.parts-table{width:100%;border-collapse:collapse;font-size:14px}
+.parts-table th{text-align:left;font-size:11px;font-family:var(--mono);color:var(--muted);padding:0 8px 10px;font-weight:400;border-bottom:1px solid var(--border)}
+.parts-table td{padding:10px 8px;border-bottom:1px solid var(--border)}
+.parts-table tr:last-child td{border-bottom:none}
+.sku-badge{font-family:var(--mono);font-size:11px;color:var(--muted);display:block;margin-top:2px}
+.notes-text{font-size:14px;color:var(--text);line-height:1.6;white-space:pre-wrap}
+.btn-primary{display:block;width:100%;background:var(--accent);color:#0a1f12;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:600;font-family:var(--sans);cursor:pointer;transition:opacity .15s;text-align:center;text-decoration:none;margin-bottom:10px}
+.btn-primary:hover{opacity:.9}
+.btn-secondary{display:block;width:100%;background:none;color:var(--muted);border:1px solid var(--border2);border-radius:8px;padding:13px;font-size:14px;font-family:var(--sans);cursor:pointer;text-align:center;text-decoration:none;transition:border-color .15s,color .15s}
+.btn-secondary:hover{border-color:var(--text);color:var(--text)}
+.loader{display:flex;align-items:center;justify-content:center;padding:80px 20px;gap:12px;color:var(--muted);font-size:13px}
+.spinner{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.job-ref{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.06em;margin-bottom:14px}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+.lightbox.open{opacity:1;pointer-events:all}
+.lightbox img,.lightbox video{max-width:100%;max-height:90vh;border-radius:8px;object-fit:contain}
+.lightbox-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:24px;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.lightbox-close:hover{background:rgba(255,255,255,.2)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="brand">ETECH MOBILITY</div>
+    <div class="brand-name">Repair Report</div>
+  </div>
+  <div class="report-label">CONFIDENTIAL</div>
+</div>
+
+<div class="page" id="pageContent">
+  <div class="loader"><div class="spinner"></div>Loading report…</div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">×</button>
+  <div id="lightboxContent"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://xndqyqdqturqqnltvqvd.supabase.co'
+const SUPABASE_KEY = 'sb_publishable_JFdevwgCqf3plTIcmxGJ_A_h6sLuodl'
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+const ORDER_ID = new URLSearchParams(location.search).get('id')
+
+;(async () => {
+  if (!ORDER_ID) { document.getElementById('pageContent').innerHTML = '<p style="padding:40px;color:var(--muted);text-align:center">Invalid report link.</p>'; return }
+
+  const [orderRes, repairRes, mediaRes] = await Promise.all([
+    sb.from('orders').select('*').eq('id', ORDER_ID).single(),
+    sb.from('repairs').select('*, repair_parts(quantity_used, parts(name,sku))').eq('order_id', ORDER_ID).order('submitted_at', { ascending: false }).limit(1).maybeSingle(),
+    sb.from('media').select('*').eq('order_id', ORDER_ID).eq('file_deleted', false).order('created_at')
+  ])
+
+  if (orderRes.error || !orderRes.data) {
+    document.getElementById('pageContent').innerHTML = '<p style="padding:40px;color:var(--muted);text-align:center">Report not found.</p>'
+    return
+  }
+
+  const order = orderRes.data
+  const repair = repairRes.data
+  const media = mediaRes.data || []
+  const intakeMedia = media.filter(m => m.stage === 'intake')
+  const completionMedia = media.filter(m => m.stage === 'completion')
+
+  document.title = `Repair Report — ${order.customer_name || 'Unknown'} — eTech Mobility`
+
+  const outcomeTag = repair ? outcomeClass(repair.outcome) : ''
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="card">
+      <div class="job-ref">JOB #${ORDER_ID.slice(-8).toUpperCase()}${order.zendesk_ticket_id ? ' · ZD #'+order.zendesk_ticket_id : ''}</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="lbl">Customer</div>
+          <div class="val">${esc(order.customer_name||'—')}</div>
+        </div>
+        <div class="info-item">
+          <div class="lbl">Chair Model</div>
+          <div class="val">${esc(order.chair_model)}</div>
+        </div>
+        <div class="info-item">
+          <div class="lbl">Date Received</div>
+          <div class="val">${fmtDate(order.created_at)}</div>
+        </div>
+        <div class="info-item full">
+          <div class="lbl">Fault Reported</div>
+          <div class="val">${esc(order.fault_reported||'—')}</div>
+        </div>
+      </div>
+    </div>
+
+    ${repair ? `
+    <div class="card">
+      <div class="card-label">Repair Summary</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="lbl">Technician</div>
+          <div class="val">${esc(repair.technician_name||'—')}</div>
+        </div>
+        <div class="info-item">
+          <div class="lbl">Time Taken</div>
+          <div class="val">${fmtTime(repair.time_taken_minutes)}</div>
+        </div>
+        <div class="info-item">
+          <div class="lbl">Service Type</div>
+          <div class="val">${repair.service_type ? capitalize(repair.service_type) : '—'}</div>
+        </div>
+        <div class="info-item">
+          <div class="lbl">Outcome</div>
+          <div class="val"><span class="tag ${outcomeTag}">${esc(repair.outcome||'—')}</span></div>
+        </div>
+        <div class="info-item">
+          <div class="lbl">Completed</div>
+          <div class="val">${fmtDate(repair.submitted_at)}</div>
+        </div>
+      </div>
+    </div>` : ''}
+
+    ${repair && repair.repair_parts && repair.repair_parts.length ? `
+    <div class="card">
+      <div class="card-label">Parts Used</div>
+      <table class="parts-table">
+        <thead><tr><th>Part</th><th>Qty</th></tr></thead>
+        <tbody>
+          ${repair.repair_parts.map(rp => `
+          <tr>
+            <td>
+              ${esc(rp.parts?.name||'Unknown')}
+              <span class="sku-badge">${esc(rp.parts?.sku||'')}</span>
+            </td>
+            <td>${rp.quantity_used}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : ''}
+
+    ${repair?.notes ? `
+    <div class="card">
+      <div class="card-label">Technician Notes</div>
+      <div class="notes-text">${esc(repair.notes)}</div>
+    </div>` : ''}
+
+    <div class="card">
+      <div class="card-label">Arrival Photos &amp; Video</div>
+      ${intakeMedia.length ? `
+      <div class="media-grid">
+        ${intakeMedia.map(m => mediaThumbHTML(m)).join('')}
+      </div>` : '<div class="no-media">No arrival media recorded</div>'}
+    </div>
+
+    <div class="card">
+      <div class="card-label">Completion Photos &amp; Video</div>
+      ${completionMedia.length ? `
+      <div class="media-grid">
+        ${completionMedia.map(m => mediaThumbHTML(m)).join('')}
+      </div>` : '<div class="no-media">No completion media recorded</div>'}
+    </div>
+
+    <div style="margin-top:8px">
+      <button class="btn-primary" onclick="window.print()">Download / Print Report</button>
+      <a class="btn-secondary" href="app.html">Back to Job Queue</a>
+    </div>
+  `
+})()
+
+function mediaThumbHTML(m) {
+  const url = `${SUPABASE_URL}/storage/v1/object/public/repairs/${m.storage_path}`
+  if (m.media_type === 'video') {
+    return `<div class="media-thumb" onclick="openLightbox('video','${url}')">
+      <video src="${url}" muted preload="metadata"></video>
+      <div class="video-badge">VIDEO</div>
+      <div class="play-icon">▶</div>
+    </div>`
+  }
+  return `<div class="media-thumb" onclick="openLightbox('photo','${url}')">
+    <img src="${url}" alt="repair photo" loading="lazy">
+  </div>`
+}
+
+function openLightbox(type, url) {
+  const lb = document.getElementById('lightbox')
+  const content = document.getElementById('lightboxContent')
+  content.innerHTML = type === 'video'
+    ? `<video src="${url}" controls autoplay style="max-width:100%;max-height:85vh;border-radius:8px"></video>`
+    : `<img src="${url}" style="max-width:100%;max-height:85vh;border-radius:8px">`
+  lb.classList.add('open')
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open')
+  document.getElementById('lightboxContent').innerHTML = ''
+}
+
+function outcomeClass(o) {
+  if (!o) return ''
+  if (o === 'Repaired') return 'tag-completed'
+  if (o === 'Unrepairable') return 'tag-red'
+  if (o === 'Waiting for Parts') return 'tag-amber'
+  if (o === 'Referred') return 'tag-blue'
+  return ''
+}
+
+function fmtDate(d) {
+  return new Date(d).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })
+}
+
+function fmtTime(mins) {
+  if (!mins) return '—'
+  if (mins < 60) return `${mins} min`
+  const h = Math.floor(mins/60), m = mins%60
+  return m ? `${h}h ${m}m` : `${h} hour${h>1?'s':''}`
+}
+
+function capitalize(s) { return s ? s.charAt(0).toUpperCase()+s.slice(1) : '' }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox() })
+</script>
+</body>
+</html>
