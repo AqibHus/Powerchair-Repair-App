@@ -415,10 +415,10 @@ async function handleFiles(stage, files) {
     if (stage === 'intake') intakeFiles.push(fileEntry)
     else completionFiles.push(fileEntry)
 
-    // Fire-and-forget DB writes so they don't block the next upload
-    sb.from('media').insert({ order_id: ORDER_ID, stage, media_type: isVideo ? 'video' : 'photo', storage_path: path })
+    // Await DB writes before moving to next file
+    await sb.from('media').insert({ order_id: ORDER_ID, stage, media_type: isVideo ? 'video' : 'photo', storage_path: path })
     if (order.status === 'pending' && stage === 'intake') {
-      sb.from('orders').update({ status: 'in_progress' }).eq('id', ORDER_ID)
+      await sb.from('orders').update({ status: 'in_progress' }).eq('id', ORDER_ID)
       order.status = 'in_progress'
     }
 
